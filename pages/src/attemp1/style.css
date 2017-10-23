@@ -1,0 +1,41 @@
+.container{
+    width: 300px;
+}
+.resizer{
+    overflow: hidden;
+}
+.resizer.have-img button.ok{
+    display: inline-block;
+}
+.resizer.have-img .inner {
+    display: block;
+}
+.inner{
+    width: 100%;
+    position: relative;
+    font-size: 0;
+    overflow: hidden;
+    display: none;
+}
+img{
+    width: 100%;
+}
+
+.frames{
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 1px solid black;
+    cursor: move;
+    outline: rgba(0, 0, 0, 0.6) solid 10000px;
+}
+button.ok{
+    float:right;
+    margin-left: 5px;
+    display: none;
+}
+canvas{
+    max-width: 100%;
+    margin:auto;
+    display: block;
+}
