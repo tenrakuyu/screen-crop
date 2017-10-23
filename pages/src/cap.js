@@ -1,4 +1,3 @@
-// TODO 展示图片太小
 var postFile = {
         init: function () {
             var t = this;
@@ -33,7 +32,7 @@ var postFile = {
             var t = this;
             var createCanvas = t.getImage.getContext("2d");
             var img = new Image();
-            console.log(img);
+            // console.log(img);
             img.src = url;
             img.onload = function () {
 
@@ -78,22 +77,17 @@ var postFile = {
             cover.fillStyle = "rgba(0, 0, 0, 0.5)";
             cover.fillRect(0, 0, t.imgWidth, t.imgHeight);
             cover.clearRect(t.sx, t.sy, t.sWidth, t.sHeight);
-
-            //预览图片
-
-            document.getElementById('show_edit').style.background = 'url(' + t.imgUrl + ')' + -t.sx + 'px ' + -t.sy + 'px no-repeat';
-            document.getElementById('show_edit').style.height = t.sHeight + 'px';
-            document.getElementById('show_edit').style.width = t.sWidth + 'px';
         },
 
-        // TODO 拖拽方法，但是缺少拉动边缘改变大小的功能
         dragAndResize: function () {
             var t = this;
             var draging = false;
+            var resizing = false;
+            var resizingX = false;
+            var resizingY = false;
             var startX = 0;
             var startY = 0;
 
-            var resizing = false;
 
             document.getElementById('cover_box').onmousemove = function (e) {
 
@@ -107,8 +101,98 @@ var postFile = {
                 var pageX = e.pageX - ( t.regional.offsetLeft + this.offsetLeft );
                 var pageY = e.pageY - ( t.regional.offsetTop + this.offsetTop );
 
-                // 判断鼠标在截取框内
-                if (pageX > t.sx && pageX < t.sx + t.sWidth && pageY > t.sy && pageY < t.sy + t.sHeight) {
+
+                // 斜拉
+                if (resizing || Math.abs(pageX - (t.sx + t.sWidth)) <= 2 && Math.abs(pageY - (t.sy + t.sHeight)) <= 2) {
+                    this.style.cursor = 'se-resize';
+
+                    this.onmousedown = function () {
+                        resizing = true;
+                        startX = e.pageX - ( t.regional.offsetLeft + this.offsetLeft );
+                        startY = e.pageY - ( t.regional.offsetTop + this.offsetTop );
+                    };
+                    window.onmouseup = function () {
+                        resizing = false;
+                    };
+                    if (resizing) {
+                        console.log("resize");
+                        if (pageX - t.sx <= 10) {
+                            // 移动到图片左边缘外边
+                            t.sWidth = 10;
+                        } else if (pageX >= t.imgWidth) {
+                            // 移动到右边缘外边
+                            t.sWidth = t.imgWidth - t.sx;
+                        } else {
+                            // 改变宽度
+                            t.sWidth = pageX - t.sx;
+                        }
+
+                        if (pageY - t.sy <= 10) {
+                            t.sHeight = 10;
+                        } else if (pageY >= t.imgHeight) {
+                            t.sHeight = t.imgHeight - t.sy;
+                        } else {
+                            t.sHeight = pageY - t.sy;
+                        }
+                        t.cutImage();
+                    }
+                }
+
+                // 横拉
+                else if (resizingX || Math.abs(pageX - (t.sx + t.sWidth)) <= 2 && t.sy <= pageY && pageY <= (t.sy + t.sHeight)) {
+                    this.style.cursor = 'e-resize';
+
+                    this.onmousedown = function () {
+                        resizingX = true;
+                        startX = e.pageX - ( t.regional.offsetLeft + this.offsetLeft );
+                    };
+                    window.onmouseup = function () {
+                        resizingX = false;
+                    };
+
+                    if (resizingX) {
+                        console.log("resizeX");
+                        if (pageX - t.sx <= 10) {
+                            // 移动到图片左边缘外边
+                            t.sWidth = 10;
+                        } else if (pageX >= t.imgWidth) {
+                            // 移动到右边缘外边
+                            t.sWidth = t.imgWidth - t.sx;
+                        } else {
+                            // 改变宽度
+                            t.sWidth = pageX - t.sx;
+                        }
+                        t.cutImage();
+                    }
+
+                }
+
+                // 竖拉
+                else if (resizingY || t.sx <= pageX && pageX <= (t.sx + t.sWidth) && Math.abs(pageY - (t.sy + t.sHeight)) <= 2) {
+                    this.style.cursor = 's-resize';
+
+                    this.onmousedown = function () {
+                        resizingY = true;
+                        startY = e.pageY - ( t.regional.offsetTop + this.offsetTop );
+                    };
+                    window.onmouseup = function () {
+                        resizingY = false;
+                    };
+                    if (resizingY) {
+                        console.log("resizeY");
+                        if (pageY - t.sy <= 10) {
+                            t.sHeight = 10;
+                        } else if (pageY >= t.imgHeight) {
+                            t.sHeight = t.imgHeight - t.sy;
+                        } else {
+                            t.sHeight = pageY - t.sy;
+                        }
+                        t.cutImage();
+                    }
+                }
+
+                // 移动
+                else if (draging || pageX > t.sx && pageX < t.sx + t.sWidth && pageY > t.sy && pageY < t.sy + t.sHeight) {
                     this.style.cursor = 'move';
 
                     this.onmousedown = function () {
@@ -140,7 +224,6 @@ var postFile = {
                             t.sx = t.ex + (pageX - startX);
                         }
 
-
                         if (t.ey + (pageY - startY) < 0) {
                             t.sy = 0;
                         } else if (t.ey + (pageY - startY) + t.sHeight > t.imgHeight) {
@@ -148,57 +231,10 @@ var postFile = {
                         } else {
                             t.sy = t.ey + (pageY - startY);
                         }
-
+                        t.cutImage();
                     }
-                    t.cutImage();
                 }
 
-                // 横拉
-                else if (Math.abs(pageX - (t.sx + t.sWidth)) <= 2 && t.sy <= pageY && pageY <= (t.sy + t.sHeight)) {
-                    this.style.cursor = 'e-resize';
-
-                    this.onmousedown = function () {
-                        resizing = true;
-
-                        startX = e.pageX - ( t.regional.offsetLeft + this.offsetLeft );
-                        console.log("startX:" + startX);
-                        console.log("pageX:" + pageX);
-                    };
-                    window.onmouseup = function () {
-                        resizing = false;
-                    };
-
-                    if (resizing) {
-                        console.log("resize");
-                        // if (t.sWidth + (startX - pageX) < 10) {
-                        //     console.log("1");
-                        //     // 移动到图片左边缘外边
-                        //     t.sWidth = 10;
-                        // } else if (t.sx + (startX - pageX) + t.sWidth > t.imgWidth) {
-                        //     console.log("2");
-                        //     // 移动到右边缘外边
-                        //     t.sWidth = t.imgWidth - t.sx;
-                        // } else {
-                        //     console.log("3");
-                        //     // 改变宽度
-                        //     console.log("sWidth:" + t.sWidth);
-                        //     t.sWidth = t.sWidth + (startX - pageX);
-                        //     console.log("sWidth:" + t.sWidth);
-                        // }
-                    }
-                    t.cutImage();
-                }
-
-                //
-                // // TODO 竖拉
-                // else if (t.sx <= pageX && pageX <= (t.sx + t.sWidth) && Math.abs(pageY - (t.sy + t.sHeight)) <= 2) {
-                //     this.style.cursor = 's-resize';
-                // }
-                //
-                // // TODO 斜拉
-                // else if (Math.abs(pageX - (t.sx + t.sWidth)) <= 2 && Math.abs(pageY - (t.sy + t.sHeight)) <= 2) {
-                //     this.style.cursor = 'se-resize';
-                // }
                 else {
                     this.style.cursor = 'default';
                 }
@@ -206,17 +242,16 @@ var postFile = {
             };
 
             document.getElementById('save_button').onclick = function () {
-                t.editPic.height = t.sHeight;
-                t.editPic.width = t.sWidth;
-                var ctx = t.editPic.getContext('2d');
-                var images = new Image();
-                images.src = t.imgUrl;
-
-                images.onload = function () {
-                    ctx.drawImage(images, t.sx, t.sy, t.sHeight, t.sWidth, 0, 0, t.sHeight, t.sWidth);
-                    document.getElementById('show_pic').getElementsByTagName('img')[0].src = t.editPic.toDataURL();
-                }
-
+                // t.editPic.height = t.sHeight;
+                // t.editPic.width = t.sWidth;
+                // var ctx = t.editPic.getContext('2d');
+                // var images = new Image();
+                // images.src = t.imgUrl;
+                //
+                // images.onload = function () {
+                //     ctx.drawImage(images, t.sx, t.sy, t.sHeight, t.sWidth, 0, 0, t.sHeight, t.sWidth);
+                //     document.getElementById('show_pic').getElementsByTagName('img')[0].src = t.editPic.toDataURL();
+                // }
             }
         }
     }

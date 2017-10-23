@@ -1,5 +1,5 @@
 body {
-    text-align: center;
+    /*text-align: center;*/
 }
 
 #label {
@@ -10,6 +10,7 @@ body {
     width: 360px;
     margin: 20px auto;
     position: relative;
+    float: left;
 }
 
 #get_image {
@@ -28,18 +29,4 @@ body {
     display: none;
     top: 0px;
     left: 0px;
-}
-
-#show_edit {
-    margin: 0 auto;
-    display: inline-block;
-}
-
-#show_pic {
-    height: 100px;
-    width: 100px;
-    border: 2px solid #000;
-    overflow: hidden;
-    margin: 0 auto;
-    display: inline-block;
 }
